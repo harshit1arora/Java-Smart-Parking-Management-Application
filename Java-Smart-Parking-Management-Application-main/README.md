@@ -10,9 +10,9 @@ Built with a robust **Spring Boot** backend and a premium **Vanilla JavaScript +
 
 ### 🅿️ Advanced Parking Logic
 - ✅ **Real-Time Slot Availability** – Live grid visualization of parking slots (Free, Occupied, Reserved).
-- ✅ **Dynamic Pricing & Billing** – Automated fee calculation (₹10/30 min or demand-based) based on live session timing.
+- ✅ **Dynamic Pricing & Billing** – Automated fee calculation (₹50/hour) based on live session timing.
 - ✅ **Automatic Release** – Real-time status updates and session termination with final billing.
-- ✅ **Authorization & Security** – Role-based access control (User, Admin, Emergency) with secure Firebase-backed authentication.
+- ✅ **Authorization & Security** – Role-based access control (User, Admin, Emergency) with secure BCrypt-backed authentication.
 
 ### 💳 Secure Payment Integration
 - ✅ **Integrated Payment Gateway** – Unified checkout via **Razorpay** for UPI, Cards, and Wallets.
@@ -20,10 +20,10 @@ Built with a robust **Spring Boot** backend and a premium **Vanilla JavaScript +
 - ✅ **Automated Record Keeping** – Real-time payment tracking and booking status updates in the SQL database.
 
 ### 🔥 Smart Features & Analytics
-- ✅ **Location-Based Search** – Proximity-based area discovery using the **Haversine formula** in Java to calculate distances and return the top 5 nearest locations.
-- ✅ **Hotspot Detection Logic** – Real-time demand tracking using `HashMap<Integer, Integer>` to monitor active bookings. If occupancy exceeds **70%**, the area is flagged as a hotspot via a `ScheduledExecutorService` running every 5 minutes.
-- ✅ **Navigation Simulation** – One-click integration that generates a direct **Google Maps URL** (`https://www.google.com/maps/dir/?api=1&destination={lat},{lng}`) for seamless arrival.
-- ✅ **Emergency Vehicle Priority** – Automated scan for dedicated `emergency` slots. If unavailable, the system identifies the nearest regular slot and enables a **force-release** mechanism if occupied for > 2 hours, logging all overrides in an `emergency_log` table.
+- ✅ **Location-Based Search** – Proximity-based area discovery using coordinate calculation to return nearest locations.
+- ✅ **Hotspot Detection Logic** – Real-time demand tracking to monitor active bookings and flag high-occupancy areas.
+- ✅ **Navigation Simulation** – One-click integration that generates a direct **Google Maps URL** for seamless arrival.
+- ✅ **Emergency Vehicle Priority** – Automated scan for dedicated `emergency` slots. If unavailable, the system identifies the nearest regular slot and prioritizes it for emergency use.
 
 ---
 
@@ -33,15 +33,16 @@ Built with a robust **Spring Boot** backend and a premium **Vanilla JavaScript +
 smartparking/
 ├── backend/                        # Spring Boot Application
 │   ├── src/main/java/com/smartparking/
-│   │   ├── controller/             # REST API Endpoints (Parking, Booking, Payments)
-│   │   ├── service/                # Business Logic (Timer, Billing, Verification)
-│   │   ├── model/                  # POJOs / Database Entities
-│   │   ├── repository/             # Data Access Layer (JDBC/JPA)
-│   │   ├── util/                   # Helper functions (Hotspot, Distance logic)
+│   │   ├── controller/             # REST API Endpoints (Parking, Booking, Payments, Auth)
+│   │   ├── service/                # Business Logic (Auth, Booking, Smart Parking, Payments)
+│   │   ├── model/                  # POJOs / Database Entities (User, Slot, Area, Booking, etc.)
+│   │   ├── repository/             # Data Access Layer (JDBC Template)
+│   │   ├── util/                   # Helper functions (Billing, Distance logic)
 │   │   └── SmartParkingApp.java    # Main Entry Point
 │   ├── src/main/resources/
-│   │   ├── application.properties  # DB & Razorpay Config (Protected)
-│   │   └── schema.sql              # Database Initialization Script
+│   │   ├── application.properties  # DB & Razorpay Config
+│   │   ├── schema.sql              # Database Schema Script
+│   │   └── data.sql                # Seed Data Script
 │   └── pom.xml                     # Maven Dependencies
 │
 └── frontend/                       # Web Client (HTML/CSS/JS)
@@ -59,7 +60,7 @@ smartparking/
 ### 🔧 Prerequisites
 - **Java JDK 17+**
 - **Maven 3.6+**
-- **MySQL 8.0+**
+- **H2 / MySQL Database**
 - **Python 3.x** (for serving the frontend)
 
 ### ⚙️ Backend Setup (Spring Boot)
@@ -67,7 +68,7 @@ smartparking/
    ```bash
    cd backend
    ```
-2. Configure your MySQL credentials and Razorpay keys in `src/main/resources/application.properties`.
+2. Configure your database credentials and Razorpay keys in `src/main/resources/application.properties`.
 3. Build and run the server:
    ```bash
    mvn spring-boot:run
@@ -99,11 +100,12 @@ The system utilizes a relational schema for high data integrity:
 
 ---
 
-## 🤝 System Design & MVC Flow
-- **Architecture**: Clear separation of Controllers, Services, and Repositories.
-- **Concurrency**: Uses `ScheduledExecutorService` for live status refreshing and hotspot detection every 5 minutes.
-- **RESTful APIs**: Standardized JSON responses for all frontend interactions.
-- **Global Error Handling**: Centralized exception mapping with custom error messages.
+## 🤝 Team Responsibilities
+
+- **Member 4**: Database Design + Authentication (JDBC, SQL, Connection Pooling)
+- **Member 5**: Navigation + Hotspots + Smart Features (Collections, Maps API)
+- **Member 3**: Frontend UI (HTML, CSS, JS, JSP/Servlets Integration)
+- **Member 2**: System Design + Payment Gateway + Integration (Razorpay, API Integration, MVC)
 
 ---
 
