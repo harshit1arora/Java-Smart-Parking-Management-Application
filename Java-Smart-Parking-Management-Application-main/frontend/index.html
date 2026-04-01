@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ParkEngineer — Smart Parking Management</title>
+  <meta name="description" content="ParkEngineer — Find, book, and manage parking slots in real-time. Smart parking system for modern cities." />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ---- Page-specific: Split layout ---- */
+    .auth-page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Left panel — hero */
+    .auth-hero {
+      background: linear-gradient(135deg, #0D0F1A 0%, #1A0E3A 60%, #0D1F2D 100%);
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-hero::before {
+      content: '';
+      position: absolute;
+      top: -100px; left: -100px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(108,99,255,0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-icon {
+      font-size: 4.5rem;
+      margin-bottom: 1.5rem;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 420px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-features {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .hero-feature {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .feature-icon {
+      width: 34px; height: 34px;
+      background: rgba(108,99,255,0.15);
+      border: 1px solid rgba(108,99,255,0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* Right panel — form */
+    .auth-form-panel {
+      background: rgba(13,15,26,0.6);
+      backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+
+    .auth-logo-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+
+    .auth-logo-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.3rem;
+      margin-bottom: 2rem;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.65rem;
+      text-align: center;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .auth-tab.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(108,99,255,0.3);
+    }
+
+    .auth-heading { font-size: 1.7rem; margin-bottom: 0.35rem; }
+    .auth-subheading { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.75rem; }
+
+
+    /* Social login */
+    .social-btn {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: all var(--transition);
+    }
+
+    .social-btn:hover {
+      background: rgba(255,255,255,0.07);
+      color: var(--text-primary);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    /* Error message */
+    .auth-error {
+      background: rgba(255,107,107,0.1);
+      border: 1px solid rgba(255,107,107,0.25);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      font-size: 0.87rem;
+      color: var(--danger);
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .auth-error.visible { display: block; animation: fadeIn 0.3s ease; }
+
+    /* Success screen */
+    .success-screen {
+      text-align: center;
+      padding: 2rem 0;
+      display: none;
+    }
+
+    .success-screen.visible { display: block; animation: fadeIn 0.4s ease; }
+
+    .success-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      animation: bounceIn 0.5s ease;
+    }
+
+    @keyframes bounceIn {
+      0%   { transform: scale(0); }
+      60%  { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    @media (max-width: 768px) {
+      .auth-page { grid-template-columns: 1fr; }
+      .auth-hero  { display: none; }
+      .auth-form-panel { padding: 2rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-page">
+
+  <!-- ===== LEFT: HERO ===== -->
+  <div class="auth-hero">
+    <div class="hero-icon">🅿️</div>
+    <h1 class="hero-title">
+      <span class="text-gradient">Smart</span><br>
+      Parking<br>
+      System
+    </h1>
+    <p class="hero-desc">
+      Find and book parking slots in real-time. No more circling blocks — 
+      reserve your spot before you arrive.
+    </p>
+    <div class="hero-features">
+      <div class="hero-feature">
+        <div class="feature-icon">🗺️</div>
+        <span>Location-based nearby parking search</span>
+      </div>
+      <div class="hero-feature">
+        <div class="feature-icon">⚡</div>
+        <span>Real-time slot availability updates</span>
+      </div>
+      <div class="hero-feature">
+        <div class="feature-icon">💳</div>
+        <span>Cashless UPI / Card / Wallet payments</span>
+      </div>
+      <div class="hero-feature">
+        <div class="feature-icon">🚨</div>
+        <span>Emergency vehicle priority system</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RIGHT: FORM ===== -->
+  <div class="auth-form-panel">
+    <div class="auth-box animate-fade-in">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">🅿️</div>
+        <span class="auth-logo-text">ParkEngineer</span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs" id="authTabs">
+        <button class="auth-tab active" id="loginTab" onclick="switchTab('login')">Login</button>
+        <button class="auth-tab"        id="signupTab" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- Error Banner -->
+      <div class="auth-error" id="authError"></div>
+
+      <!-- ===== LOGIN FORM ===== -->
+      <div id="loginForm">
+        <h2 class="auth-heading">Welcome back</h2>
+        <p class="auth-subheading">Sign in to your account</p>
+
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email address</label>
+          <div class="input-group">
+            <span class="input-icon">✉️</span>
+            <input class="form-control" type="email" id="loginEmail"
+                   placeholder="aarav@example.com" autocomplete="email"
+                   value="aarav@example.com" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Password</label>
+          <div class="input-group">
+            <span class="input-icon">🔒</span>
+            <input class="form-control" type="password" id="loginPassword"
+                   placeholder="••••••••" value="password123" />
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center mb-2" style="font-size:0.85rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;color:var(--text-secondary);">
+            <input type="checkbox" id="rememberMe" /> Remember me
+          </label>
+          <a href="#" style="color:var(--primary-light);">Forgot password?</a>
+        </div>
+
+
+
+        <button class="btn btn-primary btn-full btn-lg" id="loginBtn" onclick="doLogin()">
+          Sign In →
+        </button>
+
+        <div class="divider">or continue with</div>
+
+        <button class="social-btn" onclick="window.doGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continue with Google
+        </button>
+      </div>
+
+      <!-- ===== SIGNUP FORM ===== -->
+      <div id="signupForm" style="display:none;">
+        <h2 class="auth-heading">Create account</h2>
+        <p class="auth-subheading">Join ParkEngineer for free</p>
+
+        <div class="form-group">
+          <label class="form-label" for="signupName">Full Name</label>
+          <div class="input-group">
+            <span class="input-icon">👤</span>
+            <input class="form-control" type="text" id="signupName" placeholder="Aarav Sharma" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signupEmail">Email address</label>
+          <div class="input-group">
+            <span class="input-icon">✉️</span>
+            <input class="form-control" type="email" id="signupEmail" placeholder="you@example.com" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signupPhone">Phone Number</label>
+          <div class="input-group">
+            <span class="input-icon">📱</span>
+            <input class="form-control" type="tel" id="signupPhone" placeholder="+91 98765 43210" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signupPassword">Password</label>
+          <div class="input-group">
+            <span class="input-icon">🔒</span>
+            <input class="form-control" type="password" id="signupPassword" placeholder="Min 8 characters" />
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full btn-lg" id="signupBtn" onclick="doSignup()">
+          Create Account →
+        </button>
+
+        <div class="divider">or continue with</div>
+
+        <button class="social-btn" onclick="window.doGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <p class="text-center mt-2" style="font-size:0.82rem;color:var(--text-muted);">
+          By signing up you agree to our Terms & Privacy Policy
+        </p>
+      </div>
+
+      <!-- Success Screen -->
+      <div class="success-screen" id="successScreen">
+        <div class="success-icon">✅</div>
+        <h3 style="font-size:1.4rem;margin-bottom:0.5rem;">You're in!</h3>
+        <p style="color:var(--text-secondary);margin-bottom:1.5rem;">Redirecting to dashboard...</p>
+        <div class="progress-bar">
+          <div class="progress-fill" id="redirectProgress" style="width:0%"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script type="module" src="js/auth.js?v=1.2"></script>
+</body>
+</html>

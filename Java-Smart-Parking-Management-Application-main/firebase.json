@@ -1,0 +1,12 @@
+{
+  "auth": {
+    "providers": {
+      "anonymous": false,
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Smart Parking Management App",
+        "supportEmail": "tiwarikartikey03@gmail.com"
+      }
+    }
+  }
+}

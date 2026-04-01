@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — ParkEngineer</title>
+  <meta name="description" content="Search and find parking areas near you. View real-time availability and hotspot warnings." />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .dash-layout {
+      position: relative;
+      z-index: 1;
+      padding: 2rem 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Hero search */
+    .search-hero {
+      text-align: center;
+      padding: 2.5rem 0 2rem;
+    }
+
+    .search-hero h1 {
+      font-size: 2.4rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .search-hero p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* Area cards grid */
+    .areas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin-top: 2rem;
+    }
+
+    .area-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .area-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transform: scaleX(0);
+      transition: transform var(--transition);
+    }
+
+    .area-card:hover::before { transform: scaleX(1); }
+
+    .area-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .area-card.hotspot {
+      border-color: rgba(255,179,71,0.25);
+    }
+
+    .area-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .area-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,170,0.15));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+
+    .area-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .area-location { font-size: 0.83rem; color: var(--text-muted); }
+
+    .area-stats {
+      display: flex;
+      gap: 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .area-stat { text-align: center; }
+    .area-stat-value { font-size: 1.5rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+    .area-stat-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .area-occupancy-bar {
+      margin: 0.75rem 0;
+    }
+
+    .area-card-footer {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .distance-tag {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    /* Filter pills */
+    .filter-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+      align-items: center;
+    }
+
+    .filter-pill {
+      padding: 0.35rem 1rem;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.83rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .filter-pill.active,
+    .filter-pill:hover {
+      background: rgba(108,99,255,0.15);
+      border-color: var(--border-glow);
+      color: var(--primary-light);
+    }
+
+    /* Stats strip */
+    .dash-stats { margin-bottom: 2rem; }
+
+    /* Hotspot warning banner */
+    .hotspot-banner {
+      background: linear-gradient(135deg, rgba(255,179,71,0.1), rgba(255,107,107,0.05));
+      border: 1px solid rgba(255,179,71,0.25);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      color: var(--warning);
+      margin-bottom: 1.5rem;
+      animation: hotspot-pulse 3s ease-in-out infinite;
+      display: none;
+    }
+
+    /* Location button */
+    .location-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .location-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg,
+        rgba(255,255,255,0.04) 25%,
+        rgba(255,255,255,0.08) 50%,
+        rgba(255,255,255,0.04) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--radius-sm);
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <div class="logo-icon">🅿️</div>
+    ParkEngineer
+  </div>
+  <ul class="navbar-nav">
+    <li><a href="dashboard.html" class="active">🔍 Search</a></li>
+    <li><a href="booking.html">📋 Book Slot</a></li>
+    <li><a href="timer.html">⏱️ Session</a></li>
+  </ul>
+  <div class="navbar-actions">
+    <button class="location-btn" id="locationBtn" onclick="useMyLocation()">
+      📍 Use My Location
+    </button>
+    <div class="profile-wrapper">
+      <div class="user-avatar" id="userAvatar" onclick="toggleDropdown()">A</div>
+      <div class="profile-dropdown" id="profileDropdown">
+        <div style="padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem;">
+          <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Account</div>
+          <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary);" id="userNameDisplay">User</div>
+        </div>
+        <button class="dropdown-item danger" onclick="signOut()">
+          <span>🚪</span> Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main class="dash-layout">
+
+  <!-- Hero Search -->
+  <div class="search-hero animate-fade-in">
+    <h1>Find <span class="text-gradient">Parking</span> Near You</h1>
+    <p>Search by location, area name, or let us use your GPS</p>
+
+    <div class="search-wrapper" style="margin:0 auto;">
+      <input class="search-input" type="text" id="searchInput"
+             placeholder="Search parking areas (e.g. Whitefield, Airport...)"
+             onkeyup="handleSearchKey(event)" />
+      <button class="search-btn" onclick="searchAreas()" title="Search">🔍</button>
+    </div>
+
+    <!-- Filter pills -->
+    <div class="filter-row" style="justify-content:center;">
+      <button class="filter-pill active" id="filter-all" onclick="setFilter('all')">All Areas</button>
+      <button class="filter-pill" id="filter-free" onclick="setFilter('free')">🟢 Available</button>
+      <button class="filter-pill" id="filter-hotspot" onclick="setFilter('hotspot')">🔥 Hotspots</button>
+      <button class="filter-pill" id="filter-nearby" onclick="setFilter('nearby')">📍 Nearby</button>
+    </div>
+  </div>
+
+  <!-- Stats Strip -->
+  <div class="dash-stats stagger stats-strip" id="statsStrip">
+    <div class="stat-card">
+      <div class="stat-value" id="statAreas">—</div>
+      <div class="stat-label">Parking Areas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statFreeSlots">—</div>
+      <div class="stat-label">Free Slots</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statHotspots">—</div>
+      <div class="stat-label">Hotspot Alerts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">₹10</div>
+      <div class="stat-label">per 30 min</div>
+    </div>
+  </div>
+
+  <!-- Hotspot Banner -->
+  <div class="hotspot-banner" id="hotspotBanner">
+    🔥 <strong>High Demand Alert!</strong> Some areas are experiencing heavy traffic. Book in advance!
+  </div>
+
+  <!-- Results Label -->
+  <div class="section-header flex justify-between items-center">
+    <div>
+      <h2 class="section-title">Parking Areas</h2>
+      <p class="section-subtitle" id="resultsLabel">Loading available areas...</p>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="loadAreas()">↻ Refresh</button>
+  </div>
+
+  <!-- Areas Grid -->
+  <div class="areas-grid stagger" id="areasGrid">
+    <!-- Skeleton cards while loading -->
+    <div class="card" style="height:220px;"><div class="skeleton" style="height:100%;border-radius:var(--radius);"></div></div>
+    <div class="card" style="height:220px;"><div class="skeleton" style="height:100%;border-radius:var(--radius);"></div></div>
+    <div class="card" style="height:220px;"><div class="skeleton" style="height:100%;border-radius:var(--radius);"></div></div>
+  </div>
+
+</main>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/dashboard.js"></script>
+<script>
+/* ---- Profile Dropdown Handlers ---- */
+function toggleDropdown() {
+  document.getElementById('profileDropdown').classList.toggle('show');
+}
+
+function signOut() {
+  sessionStorage.removeItem('user');
+  window.location.href = 'index.html';
+}
+
+// Close dropdown when clicking outside
+window.addEventListener('click', (e) => {
+  if (!e.target.closest('.profile-wrapper')) {
+    document.getElementById('profileDropdown').classList.remove('show');
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book a Slot — ParkEngineer</title>
+  <meta name="description" content="View the visual parking slot map and reserve your parking slot instantly." />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .booking-layout {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Area info banner */
+    .area-info-card {
+      background: linear-gradient(135deg, rgba(108,99,255,0.08), rgba(0,212,170,0.05));
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .area-info-left { display: flex; align-items: center; gap: 1rem; }
+    .area-icon-lg {
+      width: 60px; height: 60px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+    }
+
+    /* Slot grid section */
+    .slot-section { margin-bottom: 2rem; }
+    .slot-section h2 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+
+    .slot-grid-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+    }
+
+    .slot-grid-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Selected slot indicator */
+    .selected-slot-display {
+      background: rgba(108,99,255,0.1);
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.25rem;
+      display: none;
+    }
+
+    .selected-slot-display.visible { display: flex; animation: fadeIn 0.3s ease; }
+
+    .slot-number-big {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-light);
+    }
+
+    /* Duration selector */
+    .duration-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+      margin: 1rem 0;
+    }
+
+    .duration-btn {
+      padding: 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all var(--transition);
+      text-align: center;
+    }
+
+    .duration-btn:hover,
+    .duration-btn.active {
+      background: rgba(108,99,255,0.15);
+      border-color: var(--primary);
+      color: var(--primary-light);
+    }
+
+    /* Cost preview */
+    .cost-preview {
+      background: linear-gradient(135deg, rgba(0,212,170,0.08), rgba(108,99,255,0.05));
+      border: 1px solid rgba(0,212,170,0.2);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .cost-amount {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Emergency section */
+    .emergency-card {
+      background: rgba(255,71,87,0.06);
+      border: 1px solid rgba(255,71,87,0.2);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <div class="logo-icon">🅿️</div>
+    ParkEngineer
+  </div>
+  <ul class="navbar-nav">
+    <li><a href="dashboard.html">🔍 Search</a></li>
+    <li><a href="booking.html" class="active">📋 Book Slot</a></li>
+    <li><a href="timer.html">⏱️ Session</a></li>
+  </ul>
+  <div class="navbar-actions">
+    <div class="profile-wrapper">
+      <div class="user-avatar" id="userAvatar" onclick="toggleDropdown()">A</div>
+      <div class="profile-dropdown" id="profileDropdown">
+        <div style="padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem;">
+          <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Account</div>
+          <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary);" id="userNameDisplay">User</div>
+        </div>
+        <button class="dropdown-item danger" onclick="signOut()">
+          <span>🚪</span> Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main class="booking-layout">
+
+  <!-- Area Info -->
+  <div class="area-info-card animate-fade-in" id="areaInfoCard">
+    <div class="area-info-left">
+      <div class="area-icon-lg">🏢</div>
+      <div>
+        <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Selected Area</div>
+        <h1 style="font-size:1.5rem;margin:0.2rem 0;" id="areaName">Loading...</h1>
+        <div style="font-size:0.85rem;color:var(--text-secondary);" id="areaLocation">—</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;">
+      <div class="stat-card" style="text-align:center;min-width:80px;">
+        <div class="stat-value" id="freeCount" style="font-size:1.8rem;">—</div>
+        <div class="stat-label">Free</div>
+      </div>
+      <div class="stat-card" style="text-align:center;min-width:80px;">
+        <div class="stat-value" id="occupiedCount" style="font-size:1.8rem;background:linear-gradient(135deg,var(--danger),#e05555);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">—</div>
+        <div class="stat-label">Occupied</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="loadSlots()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- Slot Grid -->
+  <div class="slot-section animate-fade-in">
+    <div class="slot-grid-wrapper">
+      <div class="slot-grid-header">
+        <div>
+          <h2>Parking Slot Map</h2>
+          <p style="font-size:0.85rem;color:var(--text-secondary);">Click a <span style="color:var(--accent);font-weight:600;">green slot</span> to select it</p>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot free"></div> Free</div>
+          <div class="legend-item"><div class="legend-dot occupied"></div> Occupied</div>
+          <div class="legend-item"><div class="legend-dot reserved"></div> Reserved</div>
+          <div class="legend-item"><div class="legend-dot emergency"></div> Emergency</div>
+        </div>
+      </div>
+
+      <!-- Slot Grid -->
+      <div class="slot-grid" id="slotGrid">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Selected slot display -->
+      <div class="selected-slot-display" id="selectedSlotDisplay">
+        <div>
+          <div style="font-size:0.8rem;color:var(--text-muted);">Selected Slot</div>
+          <div class="slot-number-big" id="selectedSlotNum">—</div>
+          <span class="badge badge-free" id="selectedSlotType">Regular</span>
+        </div>
+        <button class="btn btn-primary" onclick="openBookingModal()">
+          Reserve This Slot →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Emergency Card (only for emergency role) -->
+  <div class="emergency-card animate-fade-in" id="emergencyCard" style="display:none;">
+    <h3 style="color:#ff4757;margin-bottom:0.5rem;">🚨 Emergency Priority Slot</h3>
+    <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:1rem;">
+      As an emergency unit, you can request priority parking. This may override occupied slots if necessary.
+    </p>
+    <div class="form-group">
+      <label class="form-label">Vehicle ID / Registration</label>
+      <input class="form-control" type="text" id="vehicleId" placeholder="e.g. KA01EMR1234" />
+    </div>
+    <button class="btn btn-danger" onclick="requestEmergencySlot()">
+      🚨 Request Emergency Slot
+    </button>
+  </div>
+
+</main>
+
+<!-- ===== BOOKING MODAL ===== -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 style="margin-bottom:0.25rem;">Reserve Slot</h2>
+    <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:1.5rem;">Choose your parking duration</p>
+
+    <div style="background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.2);border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem;">
+      <div style="font-size:0.8rem;color:var(--text-muted);">Reserving Slot</div>
+      <div style="font-size:1.4rem;font-weight:700;color:var(--primary-light);" id="modalSlotNum">—</div>
+    </div>
+
+    <label class="form-label">Select Duration</label>
+    <div class="duration-grid">
+      <button class="duration-btn" onclick="selectDuration(30)"  id="dur-30">30 min</button>
+      <button class="duration-btn active" onclick="selectDuration(60)" id="dur-60">1 hr</button>
+      <button class="duration-btn" onclick="selectDuration(90)"  id="dur-90">1.5 hr</button>
+      <button class="duration-btn" onclick="selectDuration(120)" id="dur-120">2 hr</button>
+      <button class="duration-btn" onclick="selectDuration(180)" id="dur-180">3 hr</button>
+      <button class="duration-btn" onclick="selectDuration(240)" id="dur-240">4 hr</button>
+      <button class="duration-btn" onclick="selectDuration(360)" id="dur-360">6 hr</button>
+      <button class="duration-btn" onclick="selectDuration(480)" id="dur-480">8 hr</button>
+    </div>
+
+    <div class="cost-preview">
+      <div>
+        <div style="font-size:0.8rem;color:var(--text-muted);">Estimated Cost</div>
+        <div class="cost-amount" id="estimatedCost">₹20</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:0.8rem;color:var(--text-muted);">Duration</div>
+        <div style="font-size:1rem;font-weight:600;" id="modalDuration">60 min</div>
+      </div>
+    </div>
+
+    <p style="font-size:0.78rem;color:var(--text-muted);margin:0.75rem 0;">
+      ₹10 charged per 30-min block. Partial blocks rounded up.
+    </p>
+
+    <button class="btn btn-primary btn-full btn-lg" id="confirmBookingBtn" onclick="confirmBooking()">
+      Confirm & Pay →
+    </button>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/booking.js"></script>
+<script>
+/* ---- Profile Dropdown Handlers ---- */
+function toggleDropdown() {
+  document.getElementById('profileDropdown').classList.toggle('show');
+}
+
+function signOut() {
+  sessionStorage.removeItem('user');
+  window.location.href = 'index.html';
+}
+
+// Close dropdown when clicking outside
+window.addEventListener('click', (e) => {
+  if (!e.target.closest('.profile-wrapper')) {
+    const dd = document.getElementById('profileDropdown');
+    if (dd) dd.classList.remove('show');
+  }
+});
+</script>
+</body>
+</html>

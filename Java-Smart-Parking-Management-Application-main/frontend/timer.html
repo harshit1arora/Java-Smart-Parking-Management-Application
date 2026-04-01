@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Active Session — ParkEngineer</title>
+  <meta name="description" content="Monitor your active parking session with live timer and running cost." />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .timer-layout {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Hero timer card */
+    .timer-hero {
+      background: linear-gradient(135deg, #0F112A, #1A0A35, #0D1A2A);
+      border: 1px solid rgba(108,99,255,0.25);
+      border-radius: var(--radius-xl);
+      padding: 3rem 2rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      animation: glow-pulse 3s ease-in-out infinite;
+    }
+
+    .timer-hero::before {
+      content: '';
+      position: absolute;
+      top: -100px; left: 50%;
+      transform: translateX(-50%);
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .timer-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: status-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes status-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .slot-number-display {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    .slot-number-display span {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary-light);
+    }
+
+    /* Countdown clock */
+    .clock-display {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 4.5rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin: 1rem 0;
+    }
+
+    .clock-display.warning {
+      background: linear-gradient(135deg, var(--warning), var(--danger));
+      -webkit-background-clip: text;
+      background-clip: text;
+      animation: hotspot-pulse 1s ease-in-out infinite;
+    }
+
+    .clock-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Progress ring */
+    .progress-ring-wrapper {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin: 1.5rem auto;
+    }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.06);
+      stroke-width: 8;
+    }
+
+    .progress-ring-fill {
+      fill: none;
+      stroke: url(#ringGradient);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 440;
+      stroke-dashoffset: 440;
+      transition: stroke-dashoffset 1s linear;
+    }
+
+    .ring-inner {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .ring-elapsed {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .ring-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* Cost section */
+    .cost-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .running-cost {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-align: center;
+      animation: countUp 0.4s ease;
+    }
+
+    .cost-breakdown {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .cost-item {
+      text-align: center;
+      padding: 0.75rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: var(--radius-sm);
+    }
+
+    .cost-item-value { font-weight: 700; font-size: 1.1rem; color: var(--text-primary); }
+    .cost-item-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    /* Session info */
+    .session-info {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.55rem 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .info-row:last-child { border-bottom: none; }
+    .info-row .info-val  { font-weight: 600; color: var(--text-primary); }
+
+    /* Final bill screen */
+    .final-bill {
+      display: none;
+    }
+
+    .final-bill.visible {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .final-amount-big {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 4rem;
+      font-weight: 800;
+      text-align: center;
+      background: linear-gradient(135deg, var(--accent), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 1rem 0;
+    }
+
+    .overtime-warning {
+      background: rgba(255,107,107,0.1);
+      border: 1px solid rgba(255,107,107,0.25);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      color: var(--danger);
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .overtime-warning.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <div class="logo-icon">🅿️</div>
+    ParkEngineer
+  </div>
+  <ul class="navbar-nav">
+    <li><a href="dashboard.html">🔍 Search</a></li>
+    <li><a href="booking.html">📋 Book Slot</a></li>
+    <li><a href="timer.html" class="active">⏱️ Session</a></li>
+  </ul>
+  <div class="navbar-actions">
+    <div class="profile-wrapper">
+      <div class="user-avatar" id="userAvatar" onclick="toggleDropdown()">A</div>
+      <div class="profile-dropdown" id="profileDropdown">
+        <div style="padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem;">
+          <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Account</div>
+          <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary);" id="userNameDisplay">User</div>
+        </div>
+        <button class="dropdown-item danger" onclick="signOut()">
+          <span>🚪</span> Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== ACTIVE SESSION ===== -->
+<main class="timer-layout" id="activeSessionView">
+
+  <!-- Timer Hero -->
+  <div class="timer-hero animate-fade-in">
+    <svg width="0" height="0" style="position:absolute;">
+      <defs>
+        <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stop-color="#6C63FF"/>
+          <stop offset="100%" stop-color="#00D4AA"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <div class="timer-status">
+      <div class="status-dot"></div>
+      Session Active
+    </div>
+
+    <div class="slot-number-display">
+      Slot <span id="heroSlotNum">A-04</span>
+    </div>
+
+    <!-- Progress ring -->
+    <div class="progress-ring-wrapper">
+      <svg class="progress-ring" width="160" height="160" viewBox="0 0 160 160">
+        <circle class="progress-ring-bg"   cx="80" cy="80" r="70" />
+        <circle class="progress-ring-fill" cx="80" cy="80" r="70" id="ringFill" />
+      </svg>
+      <div class="ring-inner">
+        <div class="ring-elapsed" id="ringElapsed">0m</div>
+        <div class="ring-label">Elapsed</div>
+      </div>
+    </div>
+
+    <!-- Countdown -->
+    <div class="clock-label">Time Remaining</div>
+    <div class="clock-display" id="countdownDisplay">1:00:00</div>
+    <div style="font-size:0.83rem;color:var(--text-muted);" id="startTimeDisplay">
+      Started at —
+    </div>
+  </div>
+
+  <!-- Overtime Warning -->
+  <div class="overtime-warning" id="overtimeWarning">
+    ⚠️ Overtime! You've exceeded your booked duration. Additional charges apply.
+  </div>
+
+  <!-- Running Cost -->
+  <div class="cost-section animate-fade-in">
+    <div style="text-align:center;margin-bottom:0.5rem;">
+      <span style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);">Running Cost</span>
+    </div>
+    <div class="running-cost" id="runningCost">₹0</div>
+
+    <div class="cost-breakdown">
+      <div class="cost-item">
+        <div class="cost-item-value" id="cbBlocks">0</div>
+        <div class="cost-item-label">30-min blocks</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-item-value">₹10</div>
+        <div class="cost-item-label">Rate/block</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-item-value" id="cbDuration">—</div>
+        <div class="cost-item-label">Duration</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session Info -->
+  <div class="session-info animate-fade-in">
+    <h3 style="font-size:1rem;margin-bottom:1rem;">Session Details</h3>
+    <div class="info-row">
+      <span>Booking ID</span>
+      <span class="info-val" id="infoBookingId">—</span>
+    </div>
+    <div class="info-row">
+      <span>Slot</span>
+      <span class="info-val" id="infoSlot">—</span>
+    </div>
+    <div class="info-row">
+      <span>Start Time</span>
+      <span class="info-val" id="infoStart">—</span>
+    </div>
+    <div class="info-row">
+      <span>Booked Duration</span>
+      <span class="info-val" id="infoDuration">—</span>
+    </div>
+    <div class="info-row">
+      <span>Booked Amount</span>
+      <span class="info-val" id="infoAmount">—</span>
+    </div>
+    <div class="info-row">
+      <span>Payment Method</span>
+      <span class="info-val" id="infoMethod">—</span>
+    </div>
+  </div>
+
+  <!-- Release button -->
+  <button class="btn btn-danger btn-full btn-lg animate-fade-in" id="releaseBtn" onclick="openReleaseConfirm()">
+    🚗 Release Slot & Get Final Bill
+  </button>
+
+</main>
+
+<!-- ===== FINAL BILL (shown after release) ===== -->
+<div class="timer-layout final-bill" id="finalBillView">
+
+  <div style="text-align:center;padding:2rem 0 1rem;">
+    <div style="font-size:3.5rem;">🧾</div>
+    <h2 style="font-size:1.8rem;margin:0.5rem 0;">Final Bill</h2>
+    <p style="color:var(--text-secondary);">Session completed — slot is now free</p>
+  </div>
+
+  <div class="final-amount-big" id="finalAmount">₹—</div>
+
+  <div class="session-info">
+    <h3 style="font-size:1rem;margin-bottom:1rem;">Bill Summary</h3>
+    <div class="info-row"><span>Booking ID</span>  <span class="info-val" id="billBookingId">—</span></div>
+    <div class="info-row"><span>Slot</span>         <span class="info-val" id="billSlot">—</span></div>
+    <div class="info-row"><span>Duration</span>     <span class="info-val" id="billDuration">—</span></div>
+    <div class="info-row"><span>Rate</span>         <span class="info-val">₹10 / 30 min</span></div>
+    <div class="info-row"><span>Total Billed</span> <span class="info-val" id="billTotal" style="color:var(--accent);font-size:1.1rem;">—</span></div>
+  </div>
+
+  <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+    <button class="btn btn-primary btn-lg flex-1" onclick="window.location.href='dashboard.html'">
+      🔍 Book Another Slot
+    </button>
+    <button class="btn btn-ghost btn-lg flex-1" onclick="window.print()">
+      🖨️ Print Bill
+    </button>
+  </div>
+
+</div>
+
+<!-- ===== RELEASE CONFIRM MODAL ===== -->
+<div class="modal-overlay" id="releaseModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeReleaseModal()">✕</button>
+    <h2 style="margin-bottom:0.5rem;">Release Slot?</h2>
+    <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:1.5rem;">
+      This will end your session. Final billing will be computed based on actual time used.
+    </p>
+    <div style="background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.15);border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem;text-align:center;">
+      <span style="font-size:0.8rem;color:var(--text-muted);">Estimated Final Charge</span>
+      <div style="font-size:2rem;font-weight:700;color:var(--accent);" id="releaseEstimate">₹—</div>
+    </div>
+    <div style="display:flex;gap:0.75rem;">
+      <button class="btn btn-ghost flex-1" onclick="closeReleaseModal()">Cancel</button>
+      <button class="btn btn-danger flex-1 btn-lg" id="confirmReleaseBtn" onclick="releaseSlot()">
+        Confirm Release
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/timer.js"></script>
+<script>
+/* ---- Profile Dropdown Handlers ---- */
+function toggleDropdown() {
+    document.getElementById('profileDropdown').classList.toggle('show');
+}
+
+function signOut() {
+    sessionStorage.removeItem('user');
+    window.location.href = 'index.html';
+}
+
+// Close dropdown when clicking outside
+window.addEventListener('click', (e) => {
+    if (!e.target.closest('.profile-wrapper')) {
+        const dd = document.getElementById('profileDropdown');
+        if (dd) dd.classList.remove('show');
+    }
+});
+</script>
+</body>
+</html>

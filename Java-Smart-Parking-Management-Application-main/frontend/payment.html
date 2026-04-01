@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment — ParkEngineer</title>
+  <meta name="description" content="Pay for your parking reservation using UPI, card, or wallet." />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    .payment-layout {
+      position: relative;
+      z-index: 1;
+      max-width: 580px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-size: 2rem; }
+    .page-header p  { color: var(--text-secondary); margin-top: 0.25rem; }
+
+    /* Booking summary */
+    .booking-summary {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 1rem; }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .summary-row:last-child { border-bottom: none; }
+
+    .summary-row .value { font-weight: 600; color: var(--text-primary); }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0 0;
+      margin-top: 0.5rem;
+    }
+
+    .total-label { font-size: 1rem; font-weight: 600; }
+
+    .total-amount {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    /* Payment method card */
+    .payment-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* UPI section */
+    .upi-input-wrapper {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .upi-input-wrapper .form-control { flex: 1; }
+
+    .upi-apps {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .upi-app-btn {
+      flex: 1;
+      padding: 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      text-align: center;
+      transition: all var(--transition);
+    }
+
+    .upi-app-btn:hover {
+      background: rgba(108,99,255,0.1);
+      border-color: var(--border-glow);
+      color: var(--primary-light);
+    }
+
+    /* Card section */
+    .card-number-display {
+      background: linear-gradient(135deg, #1A1C35, #1E1040);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      font-family: 'Space Grotesk', monospace;
+      letter-spacing: 0.15em;
+      font-size: 1rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* Wallet section */
+    .wallet-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .wallet-opt {
+      padding: 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      cursor: pointer;
+      text-align: center;
+      font-size: 0.82rem;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-secondary);
+      transition: all var(--transition);
+    }
+
+    .wallet-opt:hover,
+    .wallet-opt.selected {
+      border-color: var(--border-glow);
+      background: rgba(108,99,255,0.1);
+      color: var(--primary-light);
+    }
+
+    .wallet-opt .wallet-icon { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+
+    /* Success screen */
+    .success-screen {
+      text-align: center;
+      padding: 3rem 1rem;
+      display: none;
+    }
+
+    .success-screen.visible { display: block; animation: fadeIn 0.4s ease; }
+
+    .success-icon-big {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+      animation: bounceIn 0.6s ease;
+    }
+
+    @keyframes bounceIn {
+      0%   { transform: scale(0); opacity:0; }
+      60%  { transform: scale(1.2); }
+      100% { transform: scale(1); opacity:1; }
+    }
+
+    .booking-id-display {
+      background: rgba(0,212,170,0.08);
+      border: 1px solid rgba(0,212,170,0.2);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+
+    .booking-id {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    /* Security badge */
+    .security-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <div class="logo-icon">🅿️</div>
+    ParkEngineer
+  </div>
+  <ul class="navbar-nav">
+    <li><a href="dashboard.html">🔍 Search</a></li>
+    <li><a href="booking.html">📋 Book Slot</a></li>
+    <li><a href="timer.html">⏱️ Session</a></li>
+  </ul>
+  <div class="navbar-actions">
+    <div class="profile-wrapper">
+      <div class="user-avatar" id="userAvatar" onclick="toggleDropdown()">A</div>
+      <div class="profile-dropdown" id="profileDropdown">
+        <div style="padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem;">
+          <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Account</div>
+          <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary);" id="userNameDisplay">User</div>
+        </div>
+        <button class="dropdown-item danger" onclick="signOut()">
+          <span>🚪</span> Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main class="payment-layout">
+
+  <!-- Page Header -->
+  <div class="page-header animate-fade-in">
+    <h1>💳 Complete Payment</h1>
+    <p>Secure checkout powered by ParkEngineer</p>
+  </div>
+
+  <!-- Booking Summary -->
+  <div class="booking-summary animate-fade-in" id="bookingSummary">
+    <div class="summary-title">Booking Summary</div>
+    <div class="summary-row">
+      <span>Booking ID</span>
+      <span class="value" id="summaryBookingId">#—</span>
+    </div>
+    <div class="summary-row">
+      <span>Slot</span>
+      <span class="value" id="summarySlot">—</span>
+    </div>
+    <div class="summary-row">
+      <span>Duration</span>
+      <span class="value" id="summaryDuration">—</span>
+    </div>
+    <div class="summary-row">
+      <span>Rate</span>
+      <span class="value">₹10 / 30 min</span>
+    </div>
+    <div class="total-row">
+      <span class="total-label">Total Amount</span>
+      <span class="total-amount" id="summaryTotal">₹—</span>
+    </div>
+  </div>
+
+  <!-- Payment Method Selection -->
+  <div class="payment-card animate-fade-in" id="paymentCard">
+    <div class="summary-title" style="margin-bottom:0.75rem;">Payment Method</div>
+
+    <!-- Method Tabs are handled dynamically by Razorpay Checkout JS -->
+    <div style="text-align:center; padding: 2rem 1rem; color:var(--text-secondary); font-size: 0.95rem;">
+      <p>Click below to securely proceed with <strong>UPI, Cards, Netbanking, or Wallets</strong>.</p>
+    </div>
+
+    <!-- Pay Button -->
+    <button class="btn btn-primary btn-full btn-lg mt-2" id="payBtn" onclick="initiatePayment()">
+      Pay Now →
+    </button>
+
+    <div class="security-badge">
+      🔒 256-bit SSL encrypted &nbsp;|&nbsp; PCI DSS compliant
+    </div>
+  </div>
+
+  <!-- Success Screen -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon-big">✅</div>
+    <h2 style="font-size:1.8rem;margin-bottom:0.5rem;">Payment Successful!</h2>
+    <p style="color:var(--text-secondary);">Your parking slot has been confirmed</p>
+
+    <div class="booking-id-display">
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem;">BOOKING CONFIRMATION</div>
+      <div class="booking-id" id="confirmBookingId">—</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.4rem;" id="confirmTxnId">TXN: —</div>
+    </div>
+
+    <div class="stagger">
+      <div class="summary-row">
+        <span>Slot</span> <span class="value" id="confirmSlot">—</span>
+      </div>
+      <div class="summary-row">
+        <span>Amount Paid</span> <span class="value" id="confirmAmount">—</span>
+      </div>
+      <div class="summary-row">
+        <span>Method</span> <span class="value" id="confirmMethod">—</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;margin-top:2rem;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-lg flex-1" onclick="goToTimer()">
+        ⏱️ View Session →
+      </button>
+      <button class="btn btn-ghost btn-lg flex-1" onclick="window.location.href='dashboard.html'">
+        🔍 Back to Search
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/payment.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    initUser();
+});
+
+function initUser() {
+    const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+    if (!user) { window.location.href = 'index.html'; return; }
+    const av = document.getElementById('userAvatar');
+    if (av) av.textContent = user.name.charAt(0).toUpperCase();
+    const nameDisp = document.getElementById('userNameDisplay');
+    if (nameDisp) nameDisp.textContent = user.name;
+}
+
+/* ---- Profile Dropdown Handlers ---- */
+function toggleDropdown() {
+    document.getElementById('profileDropdown').classList.toggle('show');
+}
+
+function signOut() {
+    sessionStorage.removeItem('user');
+    window.location.href = 'index.html';
+}
+
+// Close dropdown when clicking outside
+window.addEventListener('click', (e) => {
+    if (!e.target.closest('.profile-wrapper')) {
+        const dd = document.getElementById('profileDropdown');
+        if (dd) dd.classList.remove('show');
+    }
+});
+</script>
+</body>
+</html>
