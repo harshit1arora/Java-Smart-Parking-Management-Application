@@ -99,11 +99,11 @@ The system utilizes a relational schema for high data integrity:
 6. **`hotspots`**: Demand scoring logic for peak-hour pricing.
 
 ---
-👥 Team Contributions
+## TEAM CONTRIBUTIONS
 
 The Smart Parking Management Application was developed collaboratively, with each member contributing to specific modules to ensure a scalable, modular, and efficient system design.
 
-🔹 Member 1 – Backend Core (Parking Logic & APIs)
+# Member 1 – Backend Core (Parking Logic & APIs)
 
 Responsibility:
 
@@ -128,7 +128,7 @@ Spring Boot / Servlets
 Multithreading (ScheduledExecutorService)
 JDBC
 
-Member 2 – System Design + Payment + Integration
+# Member 2 – System Design + Payment + Integration
 
 Responsibility:
 
@@ -149,7 +149,8 @@ Technologies & Concepts:
 MVC Architecture
 API Integration
 Exception Handling (@ControllerAdvice)
-🔹 Member 3 – Frontend (User Interface)
+
+# Member 3 – Frontend (User Interface)
 
 Responsibility:
 
@@ -172,7 +173,8 @@ Technologies & Concepts:
 HTML, CSS, JavaScript
 REST API integration
 DOM manipulation
-🔹 Member 4 – Database + Authentication
+
+# Member 4 – Database + Authentication
 
 Responsibility:
 
@@ -198,7 +200,8 @@ Technologies & Concepts:
 SQL (MySQL/H2)
 JDBC
 Connection Pooling (HikariCP)
-🔹 Member 5 – Smart Features (Navigation + Hotspots)
+
+# Member 5 – Smart Features (Navigation + Hotspots)
 
 Responsibility:
 
