@@ -99,6 +99,127 @@ The system utilizes a relational schema for high data integrity:
 6. **`hotspots`**: Demand scoring logic for peak-hour pricing.
 
 ---
+👥 Team Contributions
+
+The Smart Parking Management Application was developed collaboratively, with each member contributing to specific modules to ensure a scalable, modular, and efficient system design.
+
+🔹 Member 1 – Backend Core (Parking Logic & APIs)
+
+Responsibility:
+
+Core parking system logic
+Real-time slot availability
+Booking and release system
+Timer-based billing
+
+Key Contributions:
+
+Developed REST APIs:
+/checkSlots
+/bookSlot
+/releaseSlot
+Implemented real-time slot status updates
+Designed booking lifecycle (reserve → active → release)
+Built automated billing system based on session duration
+
+Technologies & Concepts:
+
+Spring Boot / Servlets
+Multithreading (ScheduledExecutorService)
+JDBC
+
+Member 2 – System Design + Payment + Integration
+
+Responsibility:
+
+Overall system architecture
+Payment gateway integration
+Module integration (frontend ↔ backend)
+
+Key Contributions:
+
+Integrated Razorpay payment gateway (mock/real)
+Designed system flow (booking → payment → parking → release)
+Connected frontend APIs with backend services
+Implemented global exception handling
+Ensured smooth communication across modules
+
+Technologies & Concepts:
+
+MVC Architecture
+API Integration
+Exception Handling (@ControllerAdvice)
+🔹 Member 3 – Frontend (User Interface)
+
+Responsibility:
+
+Complete user interface design and interaction
+
+Key Contributions:
+
+Developed UI screens:
+Login / Signup
+Dashboard (search + parking areas)
+Slot booking interface (grid visualization)
+Payment page
+Timer & billing screen
+Implemented responsive design using HTML/CSS
+Connected frontend with backend APIs using fetch/axios
+Displayed real-time data (slots, billing, results)
+
+Technologies & Concepts:
+
+HTML, CSS, JavaScript
+REST API integration
+DOM manipulation
+🔹 Member 4 – Database + Authentication
+
+Responsibility:
+
+Database design and management
+User authentication system
+
+Key Contributions:
+
+Designed relational database schema:
+Users
+Parking Areas
+Parking Slots
+Bookings
+Payments
+Hotspots
+Implemented login/signup functionality
+Integrated password security using BCrypt hashing
+Connected backend with database using JDBC
+Managed data integrity using foreign keys and constraints
+
+Technologies & Concepts:
+
+SQL (MySQL/H2)
+JDBC
+Connection Pooling (HikariCP)
+🔹 Member 5 – Smart Features (Navigation + Hotspots)
+
+Responsibility:
+
+Advanced intelligent features to enhance system capability
+
+Key Contributions:
+
+Implemented location-based parking search
+Developed hotspot detection logic based on demand
+Added navigation feature (Google Maps integration/simulation)
+Built emergency vehicle priority system:
+Allocates emergency slots
+Overrides regular slots when necessary
+Automated hotspot updates using scheduled tasks
+
+Technologies & Concepts:
+
+Java Collections (HashMap for demand tracking)
+Haversine Formula (distance calculation)
+ScheduledExecutorService
+External API integration (Maps)
 
 ---
 
