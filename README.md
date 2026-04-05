@@ -201,7 +201,7 @@ SQL (MySQL/H2)
 JDBC
 Connection Pooling (HikariCP)
 
-# Manu – Smart Features (Navigation + Hotspots)
+# Rishit Shrivastava – Smart Features (Navigation + Hotspots)
 
 Responsibility:
 
@@ -223,8 +223,3 @@ Java Collections (HashMap for demand tracking)
 Haversine Formula (distance calculation)
 ScheduledExecutorService
 External API integration (Maps)
-
----
-
-## 📜 License
-This project is licensed under the MIT License.
