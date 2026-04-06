@@ -150,7 +150,7 @@ MVC Architecture
 API Integration
 Exception Handling (@ControllerAdvice)
 
-# Kartikey – Frontend (User Interface)
+# Kartikey Tiwari – Frontend (User Interface)
 
 Responsibility:
 
